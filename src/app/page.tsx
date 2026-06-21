@@ -4,15 +4,32 @@ import { Header } from "@/components/Header";
 import { ProductCard } from "@/components/ProductCard";
 import { CartDrawer } from "@/components/CartDrawer";
 import { Footer } from "@/components/Footer";
-import { products } from "@/data/products";
+import { type Product } from "@/data/products";
+import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const categories = ["All", "Clothing", "Electronics", "Accessories", "Home"];
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (data) setProducts(data);
+      setLoading(false);
+    };
+
+    fetchProducts();
+  }, []);
 
   const filteredProducts = activeCategory === "All" 
     ? products 
@@ -98,23 +115,29 @@ export default function Home() {
             </motion.div>
           </div>
 
-          <motion.div 
-            layout
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12"
-          >
-            {filteredProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                layout
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: index * 0.05 }}
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))}
-          </motion.div>
+          {loading ? (
+            <div className="flex justify-center items-center h-64 w-full col-span-full">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <motion.div 
+              layout
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12"
+            >
+              {filteredProducts.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  layout
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.6, delay: index * 0.05 }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </section>
       </main>
 

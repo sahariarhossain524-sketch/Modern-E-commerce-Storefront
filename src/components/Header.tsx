@@ -2,6 +2,7 @@
 
 import { useCartStore } from "@/store/useCartStore";
 import { ShoppingBag, Search, Menu } from "lucide-react";
+import { SignInButton, Show, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -48,6 +49,18 @@ export function Header() {
               </span>
             )}
           </button>
+          <div className="ml-2 flex items-center">
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <button className="text-sm font-medium bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">
+                  Sign In
+                </button>
+              </SignInButton>
+            </Show>
+            <Show when="signed-in">
+              <UserButton />
+            </Show>
+          </div>
         </div>
       </div>
     </header>
